@@ -1,0 +1,11 @@
+include README.md CONTRIBUTING.md SECURITY.md lancer.sh package.json .gitignore .gitattributes .editorconfig
+recursive-include nft_gui/api/static *.html *.css *.js
+recursive-include tests *.py *.json *.nft *.js
+recursive-include examples *.nft
+recursive-include docs *.md *.json *.txt
+recursive-include scripts *.py
+prune .local
+prune .venv
+prune dist
+prune build
+global-exclude __pycache__ *.py[cod]

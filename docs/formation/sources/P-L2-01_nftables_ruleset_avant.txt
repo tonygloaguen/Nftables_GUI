@@ -1,0 +1,28 @@
+table inet filter {
+	chain input {
+		type filter hook input priority filter; policy drop;
+		iif "lo" accept
+		ct state established,related accept
+		ip protocol icmp accept
+		tcp dport 22 ip saddr 192.168.56.0/24 accept
+	}
+
+	chain forward {
+		type filter hook forward priority filter; policy drop;
+		ct state established,related accept
+		iif "enp0s10" oif "enp0s9" ip saddr 192.168.56.0/24 ip daddr 192.168.20.0/24 accept
+		iif "enp0s9" oif "enp0s3" ip saddr 192.168.20.0/24 accept
+		iif "enp0s10" oif "enp0s3" ip saddr 192.168.56.0/24 accept
+	}
+
+	chain output {
+		type filter hook output priority filter; policy accept;
+	}
+}
+table ip nat {
+	chain postrouting {
+		type nat hook postrouting priority srcnat; policy accept;
+		oifname "enp0s3" ip saddr 192.168.20.0/24 masquerade
+		oifname "enp0s3" ip saddr 192.168.56.0/24 masquerade
+	}
+}

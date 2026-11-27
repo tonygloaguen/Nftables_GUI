@@ -1,0 +1,52 @@
+table inet filter {
+	chain input {
+		type filter hook input priority filter; policy drop;
+		iifname "lo" accept
+		ct state established,related accept
+		ct state invalid drop
+		ip protocol icmp accept
+		ip6 nexthdr ipv6-icmp accept
+		iifname "enp0s3" ip saddr 10.0.2.0/24 tcp dport 22 counter packets 0 bytes 0 accept comment "maquette: acces admin hyperviseur"
+		iifname "enp0s10" ip saddr 192.168.56.0/24 tcp dport 22 counter packets 0 bytes 0 accept
+		iifname "enp0s10" ip saddr 192.168.56.0/24 udp dport 53 accept
+		iifname "enp0s10" ip saddr 192.168.56.0/24 tcp dport 53 accept
+		iifname "enp0s9" ip saddr 192.168.20.0/24 udp dport 53 accept
+		iifname "enp0s9" ip saddr 192.168.20.0/24 tcp dport 53 accept
+		udp dport 51820 counter packets 0 bytes 0 accept
+		counter packets 20 bytes 2519 drop comment "T-016 refus par defaut - entrant"
+	}
+
+	chain forward {
+		type filter hook forward priority filter; policy drop;
+		ct state established,related accept
+		ct state invalid drop
+		iifname "enp0s10" oifname "enp0s9" ip saddr 192.168.56.0/24 ip daddr 192.168.20.10 tcp dport { 22, 139, 445 } counter packets 3 bytes 156 accept
+		iifname "enp0s10" oifname "enp0s9" ip saddr 192.168.56.0/24 ip daddr 192.168.20.10 udp dport { 137, 138 } accept
+		iifname "enp0s10" oifname "enp0s9" ip saddr 192.168.56.0/24 ip daddr 192.168.20.25 tcp dport { 53, 88, 135, 139, 389, 445, 464, 636, 3268, 3269 } counter packets 27 bytes 1404 accept
+		iifname "enp0s10" oifname "enp0s9" ip saddr 192.168.56.0/24 ip daddr 192.168.20.25 udp dport { 53, 88, 123, 389, 464 } accept
+		iifname "enp0s10" oifname "enp0s9" ip saddr 192.168.56.0/24 ip daddr 192.168.20.25 tcp dport 49152-65535 accept
+		iifname "enp0s9" oifname "enp0s3" ip saddr 192.168.20.0/24 udp dport 53 accept
+		iifname "enp0s9" oifname "enp0s3" ip saddr 192.168.20.0/24 tcp dport { 53, 80, 443 } accept
+		iifname "enp0s10" oifname "enp0s3" ip saddr 192.168.56.0/24 udp dport 53 accept
+		iifname "enp0s10" oifname "enp0s3" ip saddr 192.168.56.0/24 tcp dport { 53, 80, 443 } accept
+		iifname "wg0" oifname "enp0s9" ip saddr 10.10.10.0/24 ip daddr 192.168.20.0/24 accept
+		iifname "enp0s9" oifname "wg0" ip saddr 192.168.20.0/24 ip daddr 10.10.10.0/24 accept
+		iifname "enp0s10" oifname "enp0s9" ip saddr 192.168.56.0/24 ip daddr { 192.168.20.10, 192.168.20.25 } ip protocol icmp icmp type echo-request limit rate 10/second burst 5 packets counter packets 3 bytes 228 accept comment "diagnostic ICMP depuis le segment d administration"
+		counter packets 19 bytes 1308 drop comment "T-016 refus par defaut - transit"
+	}
+
+	chain output {
+		type filter hook output priority filter; policy accept;
+	}
+}
+table ip nat {
+	chain prerouting {
+		type nat hook prerouting priority dstnat; policy accept;
+	}
+
+	chain postrouting {
+		type nat hook postrouting priority srcnat; policy accept;
+		oifname "enp0s3" ip saddr 192.168.20.0/24 masquerade
+		oifname "enp0s3" ip saddr 192.168.56.0/24 masquerade
+	}
+}

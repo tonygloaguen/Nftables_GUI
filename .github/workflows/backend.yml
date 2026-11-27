@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: Python ${{ matrix.python }} — tests, types et lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install -e '.[dev]'
+      - run: python -m pytest -m 'not integration'
+      - run: python -m mypy
+      - run: python -m ruff check .
+      - name: Vérifier les exemples et le catalogue générés
+        run: |
+          python scripts/export_templates.py
+          git diff --exit-code -- docs/modeles-expliques.md examples/templates
+
+  javascript:
+    name: JavaScript — tests et syntaxe
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - run: npm test
+      - run: npm run check
+
+  bandit:
+    name: Sécurité — Bandit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -e '.[security]'
+      - name: Analyser le code Python (gravité moyenne et élevée)
+        run: python -m bandit -r nft_gui scripts --severity-level medium
+
+  dependencies:
+    name: Sécurité — pip-audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e '.[dev,security]'
+      - name: Auditer les dépendances installées, y compris transitives
+        run: python -m pip_audit --local --skip-editable --strict --progress-spinner off --timeout 30
+
+  package:
+    name: Distribution Python et ressources web
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - run: python -m pip install build
+      - run: python -m build
+      - run: python -m pip install dist/*.whl
+      - name: Vérifier le paquet installé hors du checkout
+        working-directory: ${{ runner.temp }}
+        run: |
+          python - <<'PY'
+          from importlib.resources import files
+          from nft_gui.templates import catalog, preview_template
+          assets = files("nft_gui.api").joinpath("static")
+          for name in ("index.html", "styles.css", "app.js", "model.js", "templates.js"):
+              assert assets.joinpath(name).is_file(), name
+          assert len(catalog()["templates"]) >= 31
+          assert preview_template("desktop")["nft_validated"] is False
+          print("Backend, modèles et ressources web présents dans la distribution.")
+          PY
