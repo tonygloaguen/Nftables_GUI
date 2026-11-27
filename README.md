@@ -335,7 +335,9 @@ schéma `libnftables-json(5)` fourni avec nftables,
 
 Voir [CONTRIBUTING.md](CONTRIBUTING.md) pour l’environnement de développement,
 les tests et la préparation d’une PR, et [SECURITY.md](SECURITY.md) pour le
-périmètre de sécurité. La CI GitHub vérifie Python 3.11/3.14, les tests et la
+périmètre de sécurité. La CI GitHub utilise Ubuntu 26.04, des actions fixées par
+SHA et les versions explicites Python 3.11.18/3.14.10 et Node.js 24.22.3.
+Elle vérifie les tests Python, les tests et la
 syntaxe JavaScript, la cohérence du catalogue généré et la distribution Python.
 Deux jobs de sécurité indépendants exécutent Bandit sur le code Python et
 pip-audit sur les dépendances directes et transitives. Les alertes Bandit de

@@ -10,7 +10,17 @@ python3 -m venv .venv
 .venv/bin/python -m pip install -e '.[dev,security]'
 ```
 
-Node.js 24 est utilisé dans la CI pour les vérifications JavaScript. L’interface n’a aucune dépendance npm et ne nécessite pas de compilation pour fonctionner.
+Node.js 24.22.3 est utilisé dans la CI pour les vérifications JavaScript. L’interface n’a aucune dépendance npm et ne nécessite pas de compilation pour fonctionner.
+
+## Versions de l’environnement CI
+
+Le workflow utilise `ubuntu-26.04` dans tous ses jobs, Python `3.11.18` et `3.14.10` pour la matrice de tests, et Node.js `24.22.3`. Les actions `checkout`, `setup-python` et `setup-node` sont fixées par leur SHA Git complet ; le commentaire indique leur version majeure pour faciliter la lecture. Ces références correspondent aux versions exécutées avec succès avant leur verrouillage.
+
+Pour mettre à jour ces références, modifier le workflow dans une PR et vérifier les six jobs, y compris Bandit et pip-audit. Vérifier chaque nouveau SHA dans le dépôt officiel de l’action.
+
+Le label `ubuntu-26.04` fixe la version Ubuntu, mais GitHub continue de mettre à jour les paquets et l’image du runner. Les dépendances Python restent résolues dans les plages de `pyproject.toml` et les outils de construction sont actualisés dans le job d’audit ; elles ne sont pas verrouillées par ce changement. La CI dispose donc de références explicites pour le système, les actions et les interpréteurs, sans prétendre reproduire l’environnement complet à l’identique.
+
+Références : [images des runners GitHub](https://github.com/actions/runner-images#image-releases) et [fixation des actions par SHA](https://docs.github.com/en/actions/reference/security/secure-use#using-third-party-actions).
 
 ## Vérifier une modification
 
