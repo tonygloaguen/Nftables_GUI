@@ -18,13 +18,15 @@ Node.js 24 est utilisé dans la CI pour les vérifications JavaScript. L’inter
 .venv/bin/python -m mypy
 .venv/bin/python -m ruff check .
 .venv/bin/python -m bandit -r nft_gui scripts --severity-level medium
-.venv/bin/python -m pip_audit --local --skip-editable --strict --progress-spinner off --timeout 30
+mkdir -p .local
+.venv/bin/python -m pip freeze --all --exclude nft-gui-backend > .local/requirements-audit.txt
+.venv/bin/python -m pip_audit -r .local/requirements-audit.txt --no-deps --disable-pip --strict --progress-spinner off --timeout 30
 npm test
 npm run check
 .venv/bin/python -m build
 ```
 
-Bandit analyse le backend et les scripts Python ; les alertes de gravité moyenne ou élevée font échouer ce contrôle. Les fixtures de test ne sont pas analysées. `pip-audit` contrôle les dépendances installées, directes et transitives, y compris celles de développement et de sécurité. Seul le projet local installé en mode éditable est exclu de cet audit ; ses dépendances restent analysées. Toute vulnérabilité connue ou erreur de collecte fait échouer le contrôle. L’audit nécessite l’accès réseau à PyPI et reflète les versions résolues lors de l’installation, sans fichier de verrouillage pour le moment.
+Bandit analyse le backend et les scripts Python ; les alertes de gravité moyenne ou élevée font échouer ce contrôle. Les fixtures de test ne sont pas analysées. `pip-audit` contrôle les dépendances installées, directes et transitives, y compris celles de développement et de sécurité. Un export `pip freeze --all` fige les versions effectivement installées pour l’audit. Seul le projet local `nft-gui-backend`, absent de PyPI, en est exclu ; ses dépendances restent analysées. Les options `--no-deps --disable-pip` évitent une nouvelle résolution de cet export complet. Toute vulnérabilité connue ou erreur de collecte fait échouer le contrôle. L’audit nécessite l’accès réseau à PyPI ; cet export temporaire ne constitue pas un fichier de verrouillage des installations futures.
 
 Les deux contrôles s’exécutent dans des jobs distincts sur chaque push et pull request, ainsi qu’au lancement manuel de la CI. Ils ne corrigent pas automatiquement le code ou les dépendances. Ne pas ajouter d’exclusion de vulnérabilité ni désactiver une règle Bandit sans une justification précise dans la PR.
 

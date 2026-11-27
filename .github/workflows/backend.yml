@@ -80,8 +80,10 @@ jobs:
           python-version: "3.11"
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e '.[dev,security]'
+      - name: Exporter les versions installées des dépendances
+        run: python -m pip freeze --all --exclude nft-gui-backend > "$RUNNER_TEMP/requirements-audit.txt"
       - name: Auditer les dépendances installées, y compris transitives
-        run: python -m pip_audit --local --skip-editable --strict --progress-spinner off --timeout 30
+        run: python -m pip_audit --requirement "$RUNNER_TEMP/requirements-audit.txt" --no-deps --disable-pip --strict --progress-spinner off --timeout 30
 
   package:
     name: Distribution Python et ressources web
