@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=84.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nft-gui-backend"
+version = "0.1.0"
+description = "Local nftables GUI with explained templates, validated transactions and rollback"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{name = "Tony Gloaguen"}]
+keywords = ["nftables", "firewall", "fastapi", "linux", "gui"]
+dependencies = ["fastapi>=0.115,<1", "pydantic>=2.10,<3", "uvicorn>=0.30,<1"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10", "httpx>=0.27,<1", "mypy>=1.14,<2", "ruff>=0.9,<1", "build>=1.2,<2"]
+security = ["bandit[toml]>=1.8,<2", "pip-audit>=2.9,<3"]
+
+[project.urls]
+Repository = "https://github.com/tonygloaguen/Nftables_GUI"
+Issues = "https://github.com/tonygloaguen/Nftables_GUI/issues"
+
+[project.scripts]
+nft-gui = "nft_gui.__main__:main"
+nft-gui-watchdog = "nft_gui.transactions.watchdog:main"
+
+[tool.setuptools.packages.find]
+include = ["nft_gui*"]
+
+[tool.setuptools.package-data]
+"nft_gui.api" = ["static/*.html", "static/*.css", "static/*.js"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = ["integration: requires nft and an isolated network namespace"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+packages = ["nft_gui"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/test_api.py" = ["E402"]
+"tests/test_models_parser_generator.py" = ["E402"]
+"tests/test_gui.py" = ["E402"]

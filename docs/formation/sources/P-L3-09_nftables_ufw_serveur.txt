@@ -1,0 +1,10 @@
+# Extrait nftables (UFW / iptables-nft)
+- Politique INPUT: drop
+- Autorisations explicites (ufw-user-input):
+  - ip saddr 192.168.56.0/24 tcp dport 22 accept
+  - ip saddr 192.168.56.0/24 tcp dport 445 accept
+  - (ancien) règles 137/138 présentes côté UFW, mais nmbd arrêté + ports fermés
+
+Sorties observées (extrait):
+chain INPUT { type filter hook input priority filter; policy drop; ... }
+chain ufw-user-input { ... tcp dport 22 accept ... tcp dport 445 accept ... }

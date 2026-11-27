@@ -1,0 +1,5 @@
+Host: rtrlinux
+Commande: sudo cat /etc/nftables.conf
+Contenu (extrait pertinent):
+- table inet filter: input policy drop, forward policy drop
+- Exceptions forward: SSH (22), ICMP, Internet, et ajout Samba TCP/445 vers 192.168.20.10

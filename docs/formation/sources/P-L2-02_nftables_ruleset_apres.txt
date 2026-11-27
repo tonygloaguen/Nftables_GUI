@@ -1,0 +1,53 @@
+gloaguen@rtrlinux:~$ sudo nft -c -f /etc/nftables.conf
+gloaguen@rtrlinux:~$ sudo nano /etc/nftables.conf
+gloaguen@rtrlinux:~$ sudo nft -c -f /etc/nftables.conf
+sudo nft -f /etc/nftables.conf
+sudo nft list ruleset | sed -n '1,220p'
+table inet filter {
+	chain input {
+		type filter hook input priority filter; policy drop;
+		iifname "lo" accept
+		ct state established,related accept
+		ct state invalid drop
+		ip protocol icmp accept
+		ip6 nexthdr ipv6-icmp accept
+		udp dport 51820 accept
+		iifname "enp0s10" ip saddr 192.168.56.0/24 tcp dport 22 accept
+		iifname "enp0s10" ip saddr 192.168.56.0/24 udp dport 53 accept
+		iifname "enp0s10" ip saddr 192.168.56.0/24 tcp dport 53 accept
+		counter packets 0 bytes 0 drop
+	}
+
+	chain forward {
+		type filter hook forward priority filter; policy drop;
+		ct state established,related accept
+		ct state invalid drop
+		iifname "enp0s10" oifname "enp0s9" ip saddr 192.168.56.0/24 ip daddr 192.168.20.10 tcp dport 22 accept
+		iifname "enp0s10" oifname "enp0s9" ip saddr 192.168.56.0/24 ip daddr 192.168.20.10 tcp dport 445 accept
+		iifname "enp0s10" oifname "enp0s9" ip saddr 192.168.56.0/24 ip daddr 192.168.20.10 tcp dport 139 accept
+		iifname "enp0s10" oifname "enp0s9" ip saddr 192.168.56.0/24 ip daddr 192.168.20.10 udp dport 137 accept
+		iifname "enp0s10" oifname "enp0s9" ip saddr 192.168.56.0/24 ip daddr 192.168.20.10 udp dport 138 accept
+		iifname "enp0s9" oifname "enp0s3" ip saddr 192.168.20.0/24 udp dport 53 accept
+		iifname "enp0s9" oifname "enp0s3" ip saddr 192.168.20.0/24 tcp dport { 53, 80, 443 } accept
+		iifname "enp0s10" oifname "enp0s3" ip saddr 192.168.56.0/24 udp dport 53 accept
+		iifname "enp0s10" oifname "enp0s3" ip saddr 192.168.56.0/24 tcp dport { 53, 80, 443 } accept
+		iifname "wg0" oifname "enp0s9" ip saddr 10.10.10.0/24 ip daddr 192.168.20.0/24 accept
+		iifname "enp0s9" oifname "wg0" ip saddr 192.168.20.0/24 ip daddr 10.10.10.0/24 accept
+		counter packets 0 bytes 0 drop
+	}
+
+	chain output {
+		type filter hook output priority filter; policy accept;
+	}
+}
+table ip nat {
+	chain prerouting {
+		type nat hook prerouting priority dstnat; policy accept;
+	}
+
+	chain postrouting {
+		type nat hook postrouting priority srcnat; policy accept;
+		oifname "enp0s3" ip saddr 192.168.20.0/24 masquerade
+		oifname "enp0s3" ip saddr 192.168.56.0/24 masquerade
+	}
+}

@@ -1,0 +1,9 @@
+{
+  "name": "nftables-gui-interface",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/test_frontend.js",
+    "check": "node --check nft_gui/api/static/app.js && node --check nft_gui/api/static/model.js && node --check nft_gui/api/static/templates.js"
+  }
+}

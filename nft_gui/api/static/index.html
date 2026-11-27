@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Nftables GUI — Éditeur de pare-feu</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/app.js" type="module"></script>
+</head>
+<body>
+  <a href="#workspace" class="skip-link">Aller à l’éditeur</a>
+  <div class="app">
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="Nftables GUI, accueil"><span class="brand-mark">N</span><span>Nftables<span class="brand-sub">LE PARE-FEU, SIMPLEMENT</span></span></a>
+      <div class="nav-caption">CONFIGURATION</div>
+      <nav aria-label="Navigation principale">
+        <button data-view="rules" class="nav-item active"><span aria-hidden="true">▤</span> Règles</button>
+        <button data-view="templates" class="nav-item"><span aria-hidden="true">▦</span> Modèles expliqués</button>
+        <button data-view="objects" class="nav-item"><span aria-hidden="true">◫</span> Ensembles & objets</button>
+        <button data-view="code" class="nav-item"><span aria-hidden="true">⌘</span> Éditeur de code</button>
+        <div class="nav-caption">SUIVI</div>
+        <button data-view="history" class="nav-item"><span aria-hidden="true">◷</span> Sauvegardes</button>
+        <button data-view="audit" class="nav-item"><span aria-hidden="true">≡</span> Journal d’activité</button>
+        <button data-view="help" class="nav-item"><span aria-hidden="true">?</span> Guide de démarrage</button>
+      </nav>
+      <div class="sidebar-bottom"><div id="mode-label" class="mode-label">Connexion…</div><p id="mode-description">Vérification du serveur local.</p><button id="logout" class="quiet light" hidden>Se déconnecter</button></div>
+    </aside>
+    <main id="workspace" tabindex="-1">
+      <header class="topbar"><div><span class="overline">ESPACE LOCAL</span><div class="workspace-name">Configuration du pare-feu</div></div><div class="actions"><button data-action="reload" class="quiet">Recharger l’état actif</button><button data-action="import">Importer</button><button data-action="export">Exporter</button></div></header>
+      <section id="transaction" class="transaction" aria-live="polite" hidden></section>
+      <div id="notice" role="alert" hidden></div>
+      <section class="summary" aria-label="Résumé du brouillon">
+        <div><span class="metric-label">TABLES</span><strong id="table-count">0</strong><span class="metric-note">Organiser le pare-feu</span></div>
+        <div><span class="metric-label">CHAÎNES</span><strong id="chain-count">0</strong><span class="metric-note">Choisir le trafic traité</span></div>
+        <div><span class="metric-label">RÈGLES</span><strong id="rule-count">0</strong><span class="metric-note">Définir les décisions</span></div>
+        <div class="summary-state"><span class="metric-label">ÉTAT DU BROUILLON</span><strong id="draft-state" class="state-text">Chargement</strong><span id="save-state" class="metric-note">Aucune modification appliquée</span></div>
+      </section>
+      <section id="view" aria-live="polite"><div class="empty"><h1>Connexion au backend…</h1></div></section>
+      <footer class="workbar"><span id="draft-note">Vos modifications restent dans le brouillon.</span><div class="actions"><button data-action="undo" id="undo-button" class="quiet" disabled>Annuler la modification</button><button data-action="validate" id="validate-button">Vérifier la configuration</button><button data-action="apply" id="apply-button" class="primary" disabled>Appliquer…</button></div></footer>
+    </main>
+  </div>
+  <input id="import-file" type="file" accept=".nft,.json,text/plain,application/json" hidden>
+  <dialog id="dialog"><form id="dialog-form"><div class="dialog-head"><div><span class="overline" id="dialog-eyebrow">BROUILLON</span><h2 id="dialog-title"></h2></div><button type="button" data-action="close-dialog" class="icon-button" aria-label="Fermer">×</button></div><div id="dialog-body"></div><div id="dialog-error" class="inline-error" role="alert" hidden></div><div class="dialog-actions"><button type="button" data-action="close-dialog">Annuler</button><button type="submit" id="dialog-submit" class="primary">Enregistrer</button></div></form></dialog>
+  <div id="toast" role="status" hidden></div>
+  <noscript>Activez JavaScript pour utiliser l’éditeur. L’API reste disponible à l’adresse /docs.</noscript>
+</body>
+</html>
