@@ -6,6 +6,7 @@ Le projet est une application Linux locale. Le développement et les tests utili
 
 ```bash
 python3 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip 'setuptools>=84.1' wheel
 .venv/bin/python -m pip install -e '.[dev,security]'
 ```
 

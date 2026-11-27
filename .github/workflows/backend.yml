@@ -78,7 +78,8 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
-      - run: python -m pip install --upgrade pip
+      - name: Actualiser les outils Python préinstallés du runner
+        run: python -m pip install --upgrade pip 'setuptools>=84.1' wheel
       - run: python -m pip install -e '.[dev,security]'
       - name: Exporter les versions installées des dépendances
         run: python -m pip freeze --all --exclude nft-gui-backend > "$RUNNER_TEMP/requirements-audit.txt"
